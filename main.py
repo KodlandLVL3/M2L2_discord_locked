@@ -15,6 +15,15 @@ async def on_ready():
     print(f'Logged in as {bot.user.name}')
 
 @bot.command()
+async def info(ctx):
+    author_id = ctx.author.id  # Используем уникальный ID пользователя
+    if author_id in Pokemon.pokemons:
+        pokemon = Pokemon.pokemons[author_id]
+        await ctx.send(await pokemon.info())
+    else:
+        await ctx.send("У вас нет покемона. Используйте команду !go, чтобы получить одного.")
+
+@bot.command()
 async def go(ctx):
     author = ctx.author.name
     if author not in Pokemon.pokemons:

@@ -1,6 +1,8 @@
 import aiohttp
 import random
 from random import randint
+from datetime import datetime, timedelta
+
 
 class Pokemon:
     pokemons = {}
@@ -12,8 +14,19 @@ class Pokemon:
         self.img = None
         self.power = random.randint(30, 60)
         self.hp = random.randint(200, 400)
+        self.last_feed_time  = datetime.now()
         if pokemon_trainer not in self.pokemons:
             self.pokemons[pokemon_trainer] = self
+
+    async def feed(self, feed_interval=60, hp_increase=10):
+        current_time = datetime.now()
+        delta_time = timedelta(seconds=feed_interval)
+        if (current_time - self.last_feed_time) > delta_time:
+            self.hp += hp_increase
+            self.last_feed_time = current_time
+            return f"Здоровье покемона увеличено. Текущее здоровье: {self.hp}"
+        else:
+            return f"Следующее время кормления покемона: {current_time+delta_time}"
 
     async def get_name(self):
         url = f'https://pokeapi.co/api/v2/pokemon/{self.pokemon_number}'
@@ -55,9 +68,11 @@ class Pokemon:
             enemy.hp = 0
             return f"Победа @{self.pokemon_trainer} над @{enemy.pokemon_trainer}!"
 
+
 class Wizard(Pokemon):
-    # В данном классе могут быть добавлены специфические методы и свойства для волшебника
-    pass
+    async def feed(self):
+        return await super().feed(hp_increase=20)
+
 
 class Fighter(Pokemon):
     async def attack(self, enemy):
@@ -66,3 +81,6 @@ class Fighter(Pokemon):
         result = await super().attack(enemy)
         self.power -= super_power
         return result + f"\nБоец применил супер-атаку силой:{super_power}"
+    
+    async def feed(self):
+        return await super().feed(feed_interval=10)
